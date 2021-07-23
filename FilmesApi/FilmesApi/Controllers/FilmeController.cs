@@ -1,4 +1,5 @@
-﻿using FilmesApi.Data;
+﻿using AutoMapper;
+using FilmesApi.Data;
 using FilmesApi.Data.Dtos;
 using FilmesApi.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -15,20 +16,17 @@ namespace FilmesApi.Controllers
     {
 
         private readonly FilmeContext _context;
-        public FilmeController(FilmeContext filmeContext)
+        private readonly IMapper _mapper;
+
+        public FilmeController(FilmeContext filmeContext,IMapper mapper)
         {
             _context = filmeContext;
+            _mapper = mapper;
         }
         [HttpPost]
         public IActionResult AdicionaFilme([FromBody] CreateFilmeDto filmeDto)
         {
-            Filme filme = new Filme
-            {
-                Titulo = filmeDto.Titulo,
-                Diretor = filmeDto.Diretor,
-                Genero = filmeDto.Genero,
-                Duracao = filmeDto.Duracao
-            };
+            Filme filme = _mapper.Map<Filme>(filmeDto);
 
             _context.Filmes.Add(filme);
             _context.SaveChanges();
@@ -48,15 +46,7 @@ namespace FilmesApi.Controllers
             if (filme != null)
             {
 
-                ReadFilmeDto filmeDto = new ReadFilmeDto
-                {
-                    Titulo = filme.Titulo,
-                    Diretor = filme.Diretor,
-                    Genero = filme.Genero,
-                    Id = filme.Id,
-                    Duracao = filme.Duracao,
-                    HoraDaConsulta = DateTime.Now
-                };
+                ReadFilmeDto filmeDto = _mapper.Map<ReadFilmeDto>(filme);
 
                 return Ok(filmeDto);
             }
@@ -72,10 +62,7 @@ namespace FilmesApi.Controllers
                 return NotFound();
             }
 
-            filme.Titulo = filmeDto.Titulo;
-            filme.Genero = filmeDto.Genero;
-            filme.Duracao = filmeDto.Duracao;
-            filme.Diretor = filmeDto.Diretor;
+            _mapper.Map(filmeDto,filme);
             _context.SaveChanges();
             return NoContent();
         }
